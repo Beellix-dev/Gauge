@@ -1,0 +1,45 @@
+# Python and local environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# Generated builds and source exports
+build/
+apps/
+dist/
+dist-next/
+exports/
+*.log
+*.tmp
+preview*.png
+
+# Local credentials and app state: never commit
+.env
+.env.*
+.codex/
+.claude/
+.claude.json
+.credentials.json
+.oauth_refresh.lock/
+accounts/
+auth.json
+profiles.json
+settings.json
+window.json
+*.dpapi
+*.pem
+*.key
+instance.lock
+
+# Editor and OS files
+.idea/
+.vscode/
+Thumbs.db
+Desktop.ini
+.DS_Store

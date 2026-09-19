@@ -1,0 +1,113 @@
+"""Small UI-only catalog. Provider errors and stored account names stay unchanged."""
+
+LANGUAGES = {"zh": "简体中文", "en": "English"}
+_language = "zh"
+
+EN = {
+    "开源许可": "Open-source licenses",
+    "返回": "Back", "设置": "Settings", "保存": "Save", "取消": "Cancel",
+    "确定": "OK", "是": "Yes", "否": "No",
+    "当前账号": "Current account", "Claude 当前账号": "Current Claude account",
+    "风格": "Theme", "强调色": "Accent", "不透明度": "Opacity",
+    "自动刷新": "Refresh", "窗口置顶": "Always on top", "开机自启动": "Launch at startup",
+    "深海": "Deep Sea", "石墨": "Graphite", "月白": "Moonlight",
+    "薄荷": "Mint", "晴蓝": "Blue", "鸢尾": "Iris", "琥珀": "Amber",
+    "{minutes} 分钟": "{minutes} min", "{minutes}分": "{minutes}m",
+    "{hours}时": "{hours}h", "{days}天{hours}时": "{days}d {hours}h",
+    "每周": "Weekly", "5 小时": "5 hours", "剩余额度": "Remaining quota",
+    "距离额度重置": "Time until reset", "此额度窗口暂无数据": "Quota unavailable",
+    "正在使用": "Currently signed in", "未用于当前登录，仍监控额度": "Not signed in here; still monitored",
+    "账号设置": "Account settings", "需登录": "Sign in", "失败": "Failed",
+    "最近登录的会员等级": "Plan at last sign-in", "会员等级": "Plan",
+    "返回监控，放弃未保存的修改": "Back to monitor; discard unsaved changes",
+    "无法读取 Windows 启动设置": "Cannot read Windows startup settings",
+    "保存失败，请检查 Windows 启动应用设置。": "Could not save. Check Windows startup settings.",
+    "保存失败，请检查本地目录权限后重试。": "Could not save. Check folder permissions and retry.",
+    "切换账号": "Switch account", "切换并打开 Codex": "Switch and open Codex",
+    "请先结束任务并退出 Codex。\n项目、历史和缓存继续共用。": "Finish your tasks and quit Codex first.\nProjects, history and cache remain shared.",
+    "等待 Codex 退出…": "Waiting for Codex to exit…",
+    "现在可以退出 Codex。\n退出后自动切换，可点“返回”取消。": "You can quit Codex now.\nSwitching starts after exit. Choose Back to cancel.",
+    "正在验证账号并切换…": "Verifying and switching account…", "切换中…": "Switching…",
+    "重试切换": "Retry", "返回监控": "Back to monitor",
+    "登录凭据已切换，请打开 Codex 确认。": "Account switched. Open Codex to confirm.",
+    "登录凭据已切换，已请求打开 Codex。": "Account switched. Codex launch requested.",
+    "登录凭据已切换，请手动打开 Codex。": "Account switched. Please open Codex manually.",
+    "添加账号": "Add account", "+ 添加账号": "+ Add account", "刷新": "Refresh",
+    "刷新所有账号额度": "Refresh all accounts", "隐藏到托盘": "Hide to tray",
+    "取消本次账号授权": "Cancel this sign-in", "正在刷新": "Refreshing",
+    "显示悬浮窗": "Show Gauge", "刷新额度": "Refresh quota", "退出": "Quit",
+    "已取消": "Cancelled", "正在取消…": "Cancelling…",
+    "等待授权 · {time}": "Signing in · {time}",
+    "切换到此账号": "Switch to this account", "重新添加账号": "Sign in again",
+    "重命名": "Rename", "移除账号": "Remove account", "账号名称": "Account name", "名称": "Name",
+    "移除这个账号并删除本程序保存的授权？\n不会退出 Codex 当前账号。": "Remove this account and its saved credentials?\nYour current Codex sign-in will remain unchanged.",
+    "无法移除": "Cannot remove",
+    "找不到 Codex CLI。请先安装或打开 Codex 桌面应用。": "Codex CLI not found. Install it or open the Codex desktop app.",
+    "Codex 返回了无法识别的额度数据。": "Unsupported quota data returned by Codex.",
+    "此账号没有返回可显示的额度窗口。": "No quota windows available for this account.",
+    "Codex 查询超时。": "Codex quota request timed out.",
+    "Codex 服务初始化失败。": "Could not initialize the Codex service.",
+    "查询失败。请确认此账号已通过 Codex 登录。": "Query failed. Sign in to Codex with this account.",
+    "不支持的账号类型。": "Unsupported account type.",
+    "授权超时，请重新添加。": "Sign-in timed out. Please try adding the account again.",
+    "授权未完成，请重新添加。": "Sign-in incomplete. Please try adding the account again.",
+    "无法完成登录，请检查 Codex CLI 后重试。": "Sign-in failed. Check Codex CLI and retry.",
+    "无法完成登录，请检查 Claude Code 后重试。": "Sign-in failed. Check Claude Code and retry.",
+    "Claude 查询限流，请稍后刷新。": "Claude rate limit reached. Refresh later.",
+    "找不到 Claude Code，请先安装官方 CLI。": "Claude Code not found. Install the official CLI first.",
+    "Claude 授权路径不能是链接。": "Claude credential paths cannot be links.",
+    "Claude 授权文件格式不支持。": "Unsupported Claude credential file format.",
+    "Claude 授权目录不能是链接。": "Claude credential directories cannot be links.",
+    "此授权不支持订阅额度，请使用 Claude 订阅登录。": "Use a Claude subscription sign-in to view subscription quota.",
+    "此 Claude 登录客户端暂不支持，请通过官方 CLI 登录。": "Unsupported Claude login client. Sign in with the official CLI.",
+    "未找到 Claude 订阅授权，请先登录。": "Claude subscription credentials not found. Please sign in.",
+    "请求地址不受支持。": "Unsupported request URL.",
+    "Claude 授权已失效，请重新授权。": "Claude authorization is invalid. Sign in again.",
+    "Claude 额度服务暂不可用。": "Claude quota service is temporarily unavailable.",
+    "无法连接 Claude 额度服务，请稍后重试。": "Cannot connect to Claude quota service. Try again later.",
+    "Claude 正在刷新授权，请稍后重试。": "Claude credentials are being refreshed. Try again later.",
+    "Claude 授权刷新锁已改变，请重试。": "Claude credential refresh lock changed. Please retry.",
+    "Claude 授权缺少有效期，请重新授权。": "Claude credential expiry is missing. Sign in again.",
+    "Claude 授权已过期，请重新授权。": "Claude authorization expired. Sign in again.",
+    "Claude 刷新授权返回异常，请重新授权。": "Invalid Claude credential refresh response. Sign in again.",
+    "Claude 登录已改变，请重新刷新。": "Claude sign-in changed. Refresh again.",
+    "无法安全保存 Claude 授权，请重新授权。": "Could not securely save Claude credentials. Sign in again.",
+    "Claude 返回的额度格式不支持。": "Unsupported Claude quota format.",
+    "Claude 查询冷却中，请稍后刷新。": "Claude queries are on cooldown. Refresh later.",
+    "此 Claude 账号未返回订阅额度。": "No subscription quota returned for this Claude account.",
+    "Claude 查询失败，请稍后重试。": "Claude query failed. Try again later.",
+    "授权文件不能是链接。": "Credential files cannot be links.",
+    "授权文件格式不支持，请重新登录。": "Unsupported credential format. Sign in again.",
+    "无法读取 ChatGPT 授权，请重新登录此账号。": "Cannot read ChatGPT credentials. Sign in again.",
+    "账号目录未通过安全检查。": "Account directory failed security checks.",
+    "无法检查 Codex 配置，暂不能切换。": "Cannot check Codex configuration. Switching is unavailable.",
+    "当前版本只支持文件授权；此 Codex 配置使用了其他凭据存储。": "Switching only supports file credentials. Codex uses a different credential store.",
+    "Codex 配置限制了登录方式，不能切换 ChatGPT 账号。": "Codex configuration blocks switching ChatGPT accounts.",
+    "目标账号不符合 Codex 配置中的工作空间限制。": "The target account does not meet Codex workspace restrictions.",
+    "Windows 无法加密备份，已取消切换。": "Windows could not encrypt the backup. Switch cancelled.",
+    "无法确认 Windows 文件权限，已取消切换。": "Cannot verify Windows file permissions. Switch cancelled.",
+    "无法保护授权文件，已取消切换。": "Cannot secure the credential file. Switch cancelled.",
+    "无法检查 Codex 是否已退出。": "Cannot check whether Codex has exited.",
+    "进程检查未完成，请重试。": "Process check did not finish. Please retry.",
+    "请先退出 Codex 桌面应用和正在运行的 Codex CLI。": "Quit the Codex desktop app and running Codex CLI first.",
+    "此账号已经在 Codex 中使用。": "This account is already in use by Codex.",
+    "目标账号验证失败，当前账号未改变。请重新登录或稍后重试。": "Target account verification failed. Current account unchanged. Sign in again or retry later.",
+    "目标登录状态已变化，请重新选择账号。": "Target sign-in changed. Select the account again.",
+    "Codex 登录状态已被其他程序更改，已取消切换。": "Another app changed the Codex sign-in. Switch cancelled.",
+    "切换未完成，原登录文件未被替换。请检查文件权限后重试。": "Switch failed; original credentials unchanged. Check file permissions and retry.",
+    "开机自启动仅支持 Windows。": "Launch at startup is only supported on Windows.",
+}
+
+
+def set_language(language: str) -> None:
+    global _language
+    _language = language if language in LANGUAGES else "zh"
+
+
+_ZH = {value: key for key, value in EN.items()}
+
+
+def tr(text: str, **values) -> str:
+    source = _ZH.get(text, text)
+    translated = EN.get(source, source) if _language == "en" else source
+    return translated.format(**values) if values else translated

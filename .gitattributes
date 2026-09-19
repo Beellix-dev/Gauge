@@ -1,0 +1,10 @@
+* text=auto
+*.py text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.ps1 text eol=crlf
+*.svg text eol=lf
+*.png binary
+*.ico binary
+# Preserve upstream license text without applying project whitespace rules.
+docs/licenses/*.txt -whitespace
