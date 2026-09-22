@@ -59,9 +59,12 @@ MIN_WINDOW_HEIGHT = 170
 LOGIN_TIMEOUT_SECONDS = 240
 WORK_DIR = APP_DIR / "empty-workdir"
 DEFAULT_HOME = Path(os.environ.get("CODEX_HOME") or Path.home() / ".codex").resolve()
+PROFILE_SAVE_WARNING = ""
 
 
 def load_profiles() -> list[Profile]:
+    global PROFILE_SAVE_WARNING
+    PROFILE_SAVE_WARNING = ""
     APP_DIR.mkdir(parents=True, exist_ok=True)
     ACCOUNTS_DIR.mkdir(parents=True, exist_ok=True)
     WORK_DIR.mkdir(parents=True, exist_ok=True)
@@ -89,6 +92,15 @@ def load_profiles() -> list[Profile]:
         not item.managed and item.provider == "claude" for item in profiles
     ):
         profiles.append(Profile("claude-current", "Claude 当前账号", str(claude_provider.DEFAULT_HOME), False, "claude"))
+    # The shared auth.json is a moving login pointer, not an account archive.
+    try:
+        retained = account_switch.preserve_local_account([asdict(p) for p in profiles], DEFAULT_HOME, ACCOUNTS_DIR)
+        if retained != [asdict(p) for p in profiles]:
+            profiles = [Profile(**p) for p in retained]
+            save_profiles(profiles)
+    except (account_switch.SwitchError, OSError):
+        # Keep the listed accounts available; retry on the next local change/refresh.
+        PROFILE_SAVE_WARNING = "账号未能独立保存，请刷新重试后再切换登录。"
     return profiles
 
 
@@ -837,11 +849,11 @@ class Monitor(QWidget):
         self.list_layout.addStretch()
         self.scroll.setWidget(self.list_widget)
         content.addWidget(self.scroll)
-        self.note = QLabel("")
+        self.note = QLabel(tr(PROFILE_SAVE_WARNING))
         self.note.setObjectName("subtle")
         self.note.setTextFormat(Qt.PlainText)
         self.note.setWordWrap(True)
-        self.note.hide()
+        self.note.setVisible(bool(PROFILE_SAVE_WARNING))
         login_status = QHBoxLayout()
         login_status.addWidget(self.note, 1)
         self.cancel_login_button = QPushButton(tr("取消"))
@@ -879,6 +891,11 @@ class Monitor(QWidget):
         self.poll_timer = QTimer(self)
         self.poll_timer.timeout.connect(self.refresh_all)
         self.poll_timer.start(self.preferences.refresh_minutes * 60_000)
+        self._local_auth_fingerprint = None
+        self.local_login_timer = QTimer(self)
+        self.local_login_timer.setInterval(2000)
+        self.local_login_timer.timeout.connect(self._check_local_login)
+        self.local_login_timer.start()
         QTimer.singleShot(250, self.refresh_all)
 
     def _build_cards(self) -> None:
@@ -1095,10 +1112,28 @@ class Monitor(QWidget):
         self.tray.activated.connect(lambda reason: self.showNormal() if reason == QSystemTrayIcon.Trigger else None)
         self.tray.show()
 
+    def _check_local_login(self) -> None:
+        # Wait for owned readers/switches before saving a refreshed credential copy.
+        if self.switch_page is not None or self.running:
+            return
+        try:
+            auth = account_switch.read_auth(self.default_home())
+            fingerprint = hashlib.sha256(auth.raw).digest()
+        except account_switch.SwitchError:
+            fingerprint = None
+        if fingerprint != self._local_auth_fingerprint or PROFILE_SAVE_WARNING:
+            self._local_auth_fingerprint = fingerprint
+            self.refresh_all()
+
     def refresh_all(self) -> None:
         if self.switch_page is not None:
             return
         detected = load_profiles()
+        if PROFILE_SAVE_WARNING and "add" not in self.running:
+            self.note.setText(tr(PROFILE_SAVE_WARNING))
+            self.note.show()
+        elif self.note.text() == tr("账号未能独立保存，请刷新重试后再切换登录。"):
+            self.note.hide()
         # Retain already working Claude accounts while their worker renews tokens.
         known_ids = {p.id for p in detected}
         detected.extend(p for p in self.profiles if not p.managed and p.provider == "claude" and

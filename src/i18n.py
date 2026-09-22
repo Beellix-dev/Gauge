@@ -4,6 +4,7 @@ LANGUAGES = {"zh": "简体中文", "en": "English"}
 _language = "zh"
 
 EN = {
+    "账号未能独立保存，请刷新重试后再切换登录。": "Could not save a separate account copy. Refresh and retry before switching logins.",
     "开源许可": "Open-source licenses",
     "返回": "Back", "设置": "Settings", "保存": "Save", "取消": "Cancel",
     "确定": "OK", "是": "Yes", "否": "No",

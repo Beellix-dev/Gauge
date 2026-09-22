@@ -6,7 +6,7 @@
 
 把 Codex 和 Claude Code 的剩余额度放在桌面一角。哪个账号在用、还能用多少、什么时候重置，一眼看清。留在你的工作界面里，少一次切窗，多一点专注。
 
-[**下载 Windows EXE**](https://github.com/Beellix-dev/Gauge/releases/download/v0.1.0/Gauge-v0.1.0-windows-x64.exe) · [所有版本](https://github.com/Beellix-dev/Gauge/releases) · [源代码](https://github.com/Beellix-dev/Gauge)
+[**下载 Windows EXE**](https://github.com/Beellix-dev/Gauge/releases/download/v0.1.1/Gauge-v0.1.1-windows-x64.exe) · [所有版本](https://github.com/Beellix-dev/Gauge/releases) · [源代码](https://github.com/Beellix-dev/Gauge)
 
 Windows 10 / 11 · 多账号 · 中英文 · MIT
 
@@ -62,6 +62,8 @@ Claude 额度监控要求具备 Claude Code 使用权限的订阅 OAuth 授权�
 ### 账号管理
 
 启动及刷新时自动识别本地可用授权。点击 **+ → Codex / Claude Code**，在官方授权页面登录以添加账号。额外账号分别保存在独立目录中。
+
+从 v0.1.1 起，识别到的 Codex 本地文件授权会独立保存到账号目录。Gauge 运行时每 2 秒检查本地登录变化，切换到其他账号或重启后，已保存的账号仍保留；定时检查本身不查询网络。首次切换前请确认账号已出现在 Gauge 中。Gauge 未运行时被覆盖且从未保存的旧授权，需要重新添加。授权被平台撤销或失效时仍需重新登录。
 
 授权等待最长 4 分钟。关闭浏览器不会终止等待，需要点击窗口内的“取消”。账号菜单 `⋯` 提供重命名、移除及平台支持的切换操作；当前使用中的账号不可移除。
 

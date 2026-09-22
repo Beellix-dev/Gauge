@@ -52,6 +52,47 @@ class AccountSwitchTests(unittest.TestCase):
         self.assertNotIn(b"TEST-ONLY", (self.app / "profiles.json").read_bytes())
         self.assertEqual(list(self.home.glob(".gauge-*.tmp")), [])
 
+    def test_external_switch_retains_each_observed_account_and_custom_name(self):
+        first = a.preserve_local_account(self.profiles, self.home, self.app / "accounts")
+        original = first[-1]
+        original["name"] = "My original account"
+        (self.home / "auth.json").write_bytes(auth("two", "new-login"))
+        second = a.preserve_local_account(first, self.home, self.app / "accounts")
+        self.assertEqual(len(second), 3)
+        self.assertEqual((Path(original["home"]) / "auth.json").read_bytes(), self.old)
+        self.assertEqual((self.target_home / "auth.json").read_bytes(), auth("two", "new-login"))
+        (self.home / "auth.json").write_bytes(auth("one", "renewed"))
+        third = a.preserve_local_account(second, self.home, self.app / "accounts")
+        self.assertEqual(len(third), 3)
+        self.assertEqual(third[-1]["name"], "My original account")
+        self.assertEqual((Path(original["home"]) / "auth.json").read_bytes(), auth("one", "renewed"))
+
+    def test_preserve_rejects_changed_source_before_commit(self):
+        atomic = a.atomic_private_write
+        def race(path, raw, before_replace=None):
+            (self.home / "auth.json").write_bytes(auth("external"))
+            atomic(path, raw, before_replace)
+        with patch.object(a, "atomic_private_write", side_effect=race), self.assertRaises(a.SwitchError):
+            a.preserve_local_account(self.profiles, self.home, self.app / "accounts")
+        self.assertEqual((self.home / "auth.json").read_bytes(), auth("external"))
+        self.assertEqual((self.target_home / "auth.json").read_bytes(), auth("two"))
+
+    def test_preserve_does_not_overwrite_concurrently_renewed_saved_tokens(self):
+        (self.home / "auth.json").write_bytes(auth("two", "shared"))
+        atomic = a.atomic_private_write
+        def race(path, raw, before_replace=None):
+            (self.target_home / "auth.json").write_bytes(auth("two", "concurrent"))
+            atomic(path, raw, before_replace)
+        with patch.object(a, "atomic_private_write", side_effect=race), self.assertRaises(a.SwitchError):
+            a.preserve_local_account(self.profiles, self.home, self.app / "accounts")
+        self.assertEqual((self.target_home / "auth.json").read_bytes(), auth("two", "concurrent"))
+
+    def test_unchanged_snapshot_does_not_rewrite_credentials(self):
+        result = a.preserve_local_account(self.profiles, self.home, self.app / "accounts")
+        with patch.object(a, "atomic_private_write") as write:
+            self.assertEqual(a.preserve_local_account(result, self.home, self.app / "accounts"), result)
+        write.assert_not_called()
+
     def test_switch_back_keeps_latest_refresh_and_reuses_existing_profile(self):
         self.profiles = self.switch()
         (self.home / "auth.json").write_bytes(auth("two", "rotated"))

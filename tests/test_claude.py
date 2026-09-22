@@ -152,7 +152,7 @@ class ClaudeTests(unittest.TestCase):
     def test_profiles_migrate_codex_and_detect_current_claude(self):
         metadata = self.home / "profiles.json"
         metadata.write_text(json.dumps({"profiles": [{"id": "current", "name": "Codex", "home": str(self.home / "codex"), "managed": False}]}))
-        with patch.multiple(s, APP_DIR=self.home, ACCOUNTS_DIR=self.home / "accounts", WORK_DIR=self.home / "work", PROFILES_FILE=metadata), patch.object(c, "DEFAULT_HOME", self.home), patch.object(s.account_switch, "identity_or_none", return_value="test"):
+        with patch.multiple(s, APP_DIR=self.home, DEFAULT_HOME=self.home / "codex", ACCOUNTS_DIR=self.home / "accounts", WORK_DIR=self.home / "work", PROFILES_FILE=metadata), patch.object(c, "DEFAULT_HOME", self.home), patch.object(s.account_switch, "identity_or_none", return_value="test"):
             profiles = s.load_profiles()
             self.assertEqual([p.provider for p in profiles], ["codex", "claude"])
             s.save_profiles(profiles)
@@ -167,13 +167,13 @@ class ClaudeTests(unittest.TestCase):
             {"id": "saved", "name": "User-added", "home": str(self.home), "managed": True, "provider": "claude"},
         ]}))
         before = self.file.read_bytes()
-        with patch.multiple(s, APP_DIR=self.home, ACCOUNTS_DIR=self.home / "accounts", WORK_DIR=self.home / "work", PROFILES_FILE=metadata), patch.object(c, "DEFAULT_HOME", self.home), patch.object(s.account_switch, "identity_or_none", return_value=None):
+        with patch.multiple(s, APP_DIR=self.home, DEFAULT_HOME=self.home / "codex", ACCOUNTS_DIR=self.home / "accounts", WORK_DIR=self.home / "work", PROFILES_FILE=metadata), patch.object(c, "DEFAULT_HOME", self.home), patch.object(s.account_switch, "identity_or_none", return_value=None):
             profiles = s.load_profiles()
         self.assertEqual([p.id for p in profiles], ["saved"])
         self.assertEqual(self.file.read_bytes(), before)
 
     def test_no_local_login_means_no_default_accounts(self):
-        with patch.multiple(s, APP_DIR=self.home, ACCOUNTS_DIR=self.home / "accounts", WORK_DIR=self.home / "work", PROFILES_FILE=self.home / "profiles.json"), patch.object(c, "DEFAULT_HOME", self.home / "absent"), patch.object(s.account_switch, "identity_or_none", return_value=None):
+        with patch.multiple(s, APP_DIR=self.home, DEFAULT_HOME=self.home / "codex", ACCOUNTS_DIR=self.home / "accounts", WORK_DIR=self.home / "work", PROFILES_FILE=self.home / "profiles.json"), patch.object(c, "DEFAULT_HOME", self.home / "absent"), patch.object(s.account_switch, "identity_or_none", return_value=None):
             self.assertEqual(s.load_profiles(), [])
 
     def test_claude_login_uses_official_cli_in_separate_home(self):

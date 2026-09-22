@@ -79,6 +79,52 @@ def identity_or_none(home: Path) -> str | None:
         return None
 
 
+def preserve_local_account(profiles: list[dict], default_home: Path, accounts: Path) -> list[dict]:
+    """Keep an independent copy of each observed Codex login; never write the shared home."""
+    try:
+        current = read_auth(default_home)
+        check_storage(default_home, current.account_id)
+    except SwitchError:
+        return profiles
+    if accounts.is_symlink() or (accounts.exists() and accounts.stat().st_file_attributes & 0x400):
+        raise SwitchError("账号目录未通过安全检查。")
+    updated = [dict(item) for item in profiles]
+    existing = None
+    previous = None
+    for item in updated:
+        if item.get("managed") and item.get("provider", "codex") == "codex":
+            home = managed_home(item, accounts)
+            try:
+                saved = read_auth(home)
+            except SwitchError:
+                continue
+            if saved.identity == current.identity:
+                existing, previous = item, saved.raw
+                break
+    if existing is None:
+        key = str(uuid.uuid4())
+        home = accounts / key
+        home.mkdir(parents=True, exist_ok=False)
+        (home / "config.toml").write_text('cli_auth_credentials_store = "file"\n', encoding="utf-8")
+        alias = next((p.get("name") for p in profiles if not p.get("managed") and
+                      p.get("provider", "codex") == "codex"), None)
+        name = alias if alias and alias != "当前账号" else f"账号 {key[:4].upper()}"
+        existing = {"id": key, "name": name, "home": str(home), "managed": True, "provider": "codex"}
+        updated.append(existing)
+    destination = managed_home(existing, accounts) / "auth.json"
+    if previous != current.raw:
+        def unchanged():
+            if read_auth(default_home).raw != current.raw:
+                raise SwitchError("登录状态正在变化，请稍后刷新。")
+            if previous is None:
+                if destination.exists():
+                    raise SwitchError("登录状态正在变化，请稍后刷新。")
+            elif read_auth(destination.parent).raw != previous:
+                raise SwitchError("登录状态正在变化，请稍后刷新。")
+        atomic_private_write(destination, current.raw, unchanged)
+    return updated
+
+
 def check_storage(home: Path, account_id: str) -> None:
     try:
         config = home / "config.toml"

@@ -19,7 +19,7 @@ FILES = (
     "tests/test_switch_ui.py", "tests/test_window_resize.py", "tests/test_login.py", "tests/test_claude.py",
     "tools/build.ps1", "tools/render_icon.py", "tools/export_source.py",
     "tools/capture_previews.py", "tools/prepare_release.py",
-    "docs/CHANGELOG.md", "docs/releases/v0.1.0.md",
+    "docs/CHANGELOG.md", "docs/releases/v0.1.0.md", "docs/releases/v0.1.1.md",
     "docs/images/monitor-dark.png", "docs/images/monitor-light.png", "docs/images/settings.png",
     "docs/licenses/index.html", "docs/licenses/LICENSE",
     "docs/licenses/python.txt", "docs/licenses/pyinstaller.txt",
